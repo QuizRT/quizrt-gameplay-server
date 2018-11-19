@@ -11,11 +11,11 @@ namespace gameplay_back.Controllers
     [ApiController]
     public class GamePlayController : ControllerBase
     {
-        IGameRepository GameRepository= null;
+        // IGameRepository GameRepository= null;
 
-        public GamePlayController(IGameRepository _ListRepo){
-            this.GameRepository = _ListRepo;
-        }
+        // public GamePlayController(IGameRepository _ListRepo){
+        //     this.GameRepository = _ListRepo;
+        // }
         // GET api/values
         [HttpGet]
         public ActionResult<IEnumerable<string>> Get()
@@ -54,35 +54,35 @@ namespace gameplay_back.Controllers
 
         // POST api/values
         [HttpPost]
-        public IActionResult Post([FromBody]User user, [FromBody]string topic,[FromBody] int no_of_players)
-        {
-            var post= GameRepository.PostGame(user, topic, no_of_players);
-            if(post)
-            {
-                return Ok("Game Created..");
-            }
-            else
-            {
-                return BadRequest("Can't post. Try Again..");
-            }
+        // public IActionResult Post([FromBody]User user, [FromBody]string topic,[FromBody] int no_of_players)
+        // {
+        //     var post= GameRepository.PostGame(user, topic, no_of_players);
+        //     if(post)
+        //     {
+        //         return Ok("Game Created..");
+        //     }
+        //     else
+        //     {
+        //         return BadRequest("Can't post. Try Again..");
+        //     }
 
-        }
+        // }
 
         // PUT api/values/5
         [HttpPatch]
-        public IActionResult PatchUsers([FromBody] User  user,[FromBody] string topic, [FromBody] int no_of_players)
-        {
-            // var patch= GameRepository.PatchUsersInGame(user, topic, no_of_players);
-            // if(patch)
-            // {
-            //     return Ok("User added to game_id ");
-            // }
-            // else
-            // {
-                return BadRequest("Can't patch.Try Again..");
-            // }
+        // public IActionResult PatchUsers([FromBody] User  user,[FromBody] string topic, [FromBody] int no_of_players)
+        // {
+        //     // var patch= GameRepository.PatchUsersInGame(user, topic, no_of_players);
+        //     // if(patch)
+        //     // {
+        //     //     return Ok("User added to game_id ");
+        //     // }
+        //     // else
+        //     // {
+        //         return BadRequest("Can't patch.Try Again..");
+        //     // }
 
-        }
+        // }
 
          [HttpPatch("{id}")]
         public IActionResult PatchQuestions([FromQuery]int id)

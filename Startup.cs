@@ -24,7 +24,6 @@ namespace gameplay_back {
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices (IServiceCollection services) {
-            services.AddScoped<IGameRepository,GameFunctions>();
             services.AddMvc ().SetCompatibilityVersion (CompatibilityVersion.Version_2_1);
             services.AddCors (o => o.AddPolicy ("CorsPolicy", builder => {
                 builder
@@ -35,7 +34,7 @@ namespace gameplay_back {
             }));
             services.AddSignalR ();
 
-            services.AddDbContext<efmodel>();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -49,7 +48,7 @@ namespace gameplay_back {
             app.UseSignalR (routes => {
                 routes.MapHub<GamePlayHub> ("/gameplayhub");
             });
-            // app.UseHttpsRedirection (); // To Avoid Redirection On Deployment
+            app.UseHttpsRedirection (); // To Avoid Redirection On Deployment
             app.UseMvc ();
         }
     }

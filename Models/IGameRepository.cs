@@ -2,14 +2,36 @@ using System.Collections.Generic;
 
 namespace gameplay_back.Models
 {
-    public interface IGameRepository
+    public class IGameRepository
     {
-        // List<Game> GetPendingGamesByTopic(string topic);
-        bool PostGame(User user, string topic, int no_of_players_required );
-        // bool PatchUsersInGame(User user, string topic, int no_of_players_required);
-        // bool PatchQuestionsInGame(int game_id);
-        // List<Game> GetRunningGames();
-        // Game GetGameById(int game_id);
+        private static ICollection<Game> pending_games;
+        private static ICollection<User> connected_users;
+        private static IGameRepository instance=null;
+
+        public static IGameRepository GetInstance()
+        {
+            if(instance==null)
+            {
+                instance=new IGameRepository();
+            }
+            return instance;
+        }
+
+        private IGameRepository()
+        {
+            connected_users = new List<User>();
+            pending_games = new List<Game>();
+        }
+
+        public void AddUser(User user)
+        {
+            connected_users.Add(user);
+        }
+
+        public void RemoveUser(User user)
+        {
+            connected_users.Remove(user);
+        }
     }
 }
 
