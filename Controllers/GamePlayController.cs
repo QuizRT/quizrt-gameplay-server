@@ -1,0 +1,109 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using gameplay_back.Models;
+
+namespace gameplay_back.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class GamePlayController : ControllerBase
+    {
+        IGameRepository GameRepository= null;
+
+        public GamePlayController(IGameRepository _ListRepo){
+            this.GameRepository = _ListRepo;
+        }
+        // GET api/values
+        [HttpGet]
+        public ActionResult<IEnumerable<string>> Get()
+        {
+            return new string[] { "value1", "value2" };
+        }
+
+        // GET api/values/5
+        [HttpGet("{id}")]
+        public ActionResult Get([FromQuery]int id)
+        {
+            // var get=  GameRepository.GetGameById(id);
+
+            // if(get!=null)
+            // {
+            //     return Ok(get);
+            // }
+            // else
+            // {
+                return NotFound("The game you are looking for cannot be found");
+            // }
+        }
+        [HttpGet("{topic}")]
+        public ActionResult GetPendingGames([FromQuery]string topic)
+        {
+            // var getpending= GameRepository.GetPendingGamesByTopic(topic);
+            //  if(getpending!=null)
+            //  {
+                //  return Ok(getpending);
+            //  }
+            //  else
+            //  {
+                 return NotFound("pending games not anymore..");
+            //  }
+        }
+
+        // POST api/values
+        [HttpPost]
+        public IActionResult Post([FromBody]User user, [FromBody]string topic,[FromBody] int no_of_players)
+        {
+            var post= GameRepository.PostGame(user, topic, no_of_players);
+            if(post)
+            {
+                return Ok("Game Created..");
+            }
+            else
+            {
+                return BadRequest("Can't post. Try Again..");
+            }
+
+        }
+
+        // PUT api/values/5
+        [HttpPatch]
+        public IActionResult PatchUsers([FromBody] User  user,[FromBody] string topic, [FromBody] int no_of_players)
+        {
+            // var patch= GameRepository.PatchUsersInGame(user, topic, no_of_players);
+            // if(patch)
+            // {
+            //     return Ok("User added to game_id ");
+            // }
+            // else
+            // {
+                return BadRequest("Can't patch.Try Again..");
+            // }
+
+        }
+
+         [HttpPatch("{id}")]
+        public IActionResult PatchQuestions([FromQuery]int id)
+        {
+
+            // var patch= GameRepository.PatchQuestionsInGame(id);
+            // if(patch)
+            // {
+            //     return Ok("User added to game_id ");
+            // }
+            // else
+            // {
+                return BadRequest("Can't patch.Try Again..");
+            // }
+
+        }
+
+        // DELETE api/values/5
+        [HttpDelete("{id}")]
+        public void Delete(int id)
+        {
+        }
+    }
+}
