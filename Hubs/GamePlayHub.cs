@@ -19,11 +19,10 @@ namespace gameplay_back.hubs
     public class GamePlayHub: Hub
     {
         static int i=10;
-        // private IGameRepository game_repository;
-        // public GamePlayHub()
-        // {       
+        static IGameRepository gameRepository= new IGameRepository();
             
-        private static Game game= new Game();
+        private static Game game;
+        static GamePlayManager gamePlayManager= new GamePlayManager(); 
         static Stopwatch stopwatch= new Stopwatch();
         HttpClient http= new HttpClient();
         public  async Task OnConnectedAsync (string username, string topic,  int noOfPlayers)
@@ -31,12 +30,7 @@ namespace gameplay_back.hubs
                 
             if (noOfPlayers==1)
             {
-                game.Users.Add (username);
-                game.NumberOfPlayersRequired=noOfPlayers;
-                game.PendingGame=false;
-                game.Topic=topic;
-                game.GameStarted=true;
-                game.GameOver=false;
+                gamePlayManager.Create_Game(username, topic, 1);
                 HttpResponseMessage response = await this.http.GetAsync("http://172.23.238.164:8080/api/quizrt/question");
                 HttpContent content = response.Content;
                 string data = await content.ReadAsStringAsync();
@@ -54,9 +48,7 @@ namespace gameplay_back.hubs
             {
                 if (game.Topic==topic)
                 { 
-                    game.Users.Add (username);
-                    game.NumberOfPlayersJoined++;
-                    game.NumberOfPlayersRequired=noOfPlayers;
+                   game.AddUsersToGame(username, game);
                     stopwatch.Start();
                     while (game.NumberOfPlayersJoined<game.NumberOfPlayersRequired && stopwatch.ElapsedMilliseconds<=90000)
                     {
@@ -87,10 +79,7 @@ namespace gameplay_back.hubs
                 }
                 else
                 {
-                    Game game1= new Game();
-                    game1.Topic=topic;
-                    game1.Users.Add(username);
-                    game1.NumberOfPlayersRequired = noOfPlayers;
+                   gamePlayManager.Create_Game (username, topic, noOfPlayers);
                 }
             }
 

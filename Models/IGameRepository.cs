@@ -1,11 +1,12 @@
 using System.Collections.Generic;
+using gameplay_back.Models;
 
 namespace gameplay_back.Models
 {
     public class IGameRepository
     {
-        private static ICollection<Game> pending_games;
-        private static ICollection<User> connected_users;
+        private static GamePlayManager gameplaymanager;
+        private static List<Game> game;
         private static IGameRepository instance=null;
 
         public static IGameRepository GetInstance()
@@ -17,21 +18,29 @@ namespace gameplay_back.Models
             return instance;
         }
 
-        private IGameRepository()
+        public void Add_Users_To_Game  (string user, int noOfPlayersJoined)
         {
-            connected_users = new List<User>();
-            pending_games = new List<Game>();
+            //Where users will get joined
         }
 
-        public void AddUser(User user)
+        public void Send_To_Pending_Games (string topic, Game game)
         {
-            connected_users.Add(user);
+            if (game.NumberOfPlayersJoined < game.NumberOfPlayersRequired)
+            {
+                gameplaymanager.PendingGames.Add(topic, game);
+            }
+            else
+            {
+                From_Pending_To_Running(game);
+            }
         }
 
-        public void RemoveUser(User user)
+        public void  From_Pending_To_Running (Game game)
         {
-            connected_users.Remove(user);
+            gameplaymanager.RunningGames.Add(game);
         }
+
+        
     }
 }
 
