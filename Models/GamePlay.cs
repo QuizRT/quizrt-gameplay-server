@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-
+using System.Diagnostics;
+using System.Threading;
+using System.IO;
 namespace gameplay_back.Models {
 
 //    public class User
@@ -32,7 +34,6 @@ namespace gameplay_back.Models {
 
     public class Game
     {
-        
         public string GameId { get; set; }
         public int QuestionTimeout { get; set; }
         // public List<Questions> Questions { get; set; }
@@ -42,7 +43,7 @@ namespace gameplay_back.Models {
         public List<string> Users { get; set; }
         public  bool GameOver{get; set;}
         public bool GameStarted{get; set;}
-        public bool PendingGame{get; set;} 
+        public bool PendingGame{get; set;}
 
         public Game (string username, string topic, int NumberOfPlayers) {
             Guid guid= new Guid();
@@ -56,12 +57,28 @@ namespace gameplay_back.Models {
             GameStarted=false;
             PendingGame=true;
         }
-        public void AddUsersToGame(string username, Game game)
+        public Game AddUsersToGame(string username, Game game)
         {
             game.Users.Add(username);
             game.NumberOfPlayersJoined++;
+            Stopwatch stopwatch= new Stopwatch();
+            while (game.NumberOfPlayersJoined<game.NumberOfPlayersRequired && stopwatch.ElapsedMilliseconds<=60000)
+            {
+                Thread.Sleep(1000);
+            }
+            stopwatch.Stop();
+            if (game.NumberOfPlayersJoined==game.NumberOfPlayersRequired)
+            {
+                GamePlayManager gamePlayManager = new GamePlayManager();
+                game = gamePlayManager.TransferFromPendingGamesToRunningGames(game);
+                return game;
+            }
+            else
+            {
+                game=null;
+            }
+            return game;
         }
-
         public Game() {}
 
     }
@@ -86,10 +103,13 @@ namespace gameplay_back.Models {
             return game;
         }
 
-        public void TransferFromPendingGamesToRunningGames(Game game)
+        public Game TransferFromPendingGamesToRunningGames(Game game)
         {
             RunningGames.Add(game);
-            PendingGames.Remove(game.GameId) ;
+            var remove = PendingGames.Where(p => p.Value ==  game); 
+            
+            return game;
+
         }
     }
 

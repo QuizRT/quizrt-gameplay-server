@@ -25,6 +25,7 @@ namespace gameplay_back.hubs
         static GamePlayManager gamePlayManager= new GamePlayManager(); 
         static Stopwatch stopwatch= new Stopwatch();
         HttpClient http= new HttpClient();
+        static bool StartGame = false;
         public  async Task OnConnectedAsync (string username, string topic,  int noOfPlayers)
         { 
                 
@@ -48,17 +49,9 @@ namespace gameplay_back.hubs
             {
                 if (game.Topic==topic)
                 { 
-                   game.AddUsersToGame(username, game);
-                    stopwatch.Start();
-                    while (game.NumberOfPlayersJoined<game.NumberOfPlayersRequired && stopwatch.ElapsedMilliseconds<=90000)
+                   StartGame = game.AddUsersToGame(username, game);
+                    if(StartGame)
                     {
-                        Thread.Sleep(1000);
-                    }
-                    stopwatch.Stop();
-                    if (game.NumberOfPlayersJoined==noOfPlayers)
-                    {
-                        game.PendingGame=false;
-                        game.GameStarted=true;
                         HttpResponseMessage response = await this.http.GetAsync ("http://172.23.238.164:8080/api/quizrt/question");
                         HttpContent content = response.Content;
                         string data = await content.ReadAsStringAsync();
@@ -67,7 +60,7 @@ namespace gameplay_back.hubs
                         for (i=0;i<7;i++)
                         {
                             Console.WriteLine("came here");
-                            await Clients.All.SendAsync("SendQuestions", json[random.Next(1,json.Count)]);
+                            await Clients.Groups(game.GameId).SendAsync("SendQuestions", json[random.Next(1,json.Count)]);
                             Thread.Sleep(10000);
                         }
 
