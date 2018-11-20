@@ -11,7 +11,7 @@ namespace gameplay_back.Models {
        string username;
        string topic;
        int no_of_players;
-       
+
 
    }
     public class Questions
@@ -35,14 +35,20 @@ namespace gameplay_back.Models {
         
         public string GameId { get; set; }
         public int QuestionTimeout { get; set; }
-        public List<Questions> Questions { get; set; }
+        // public List<Questions> Questions { get; set; }
         public int NumberOfPlayersRequired { get; set; }
         public int NumberOfPlayersJoined { get; set; }
         public string Topic { get; set; }
-        public List<User> Users { get; set; }
+        public List<string> Users { get; set; }
         public  bool GameOver{get; set;}
         public bool GameStarted{get; set;}
         public bool PendingGame{get; set;} 
+    }
+
+    public class GamePlayManager
+    {
+        public Dictionary<string, Game> PendingGames{get; set;}
+        public List<Game> RunningGames{get; set;}
     }
 
 }
