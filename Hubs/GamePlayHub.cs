@@ -18,65 +18,114 @@ namespace gameplay_back.hubs
 {
     public class GamePlayHub: Hub
     {
-        static int i=10;
-        static IGameRepository gameRepository= new IGameRepository();
-            
-        private static Game game;
-        static GamePlayManager gamePlayManager= new GamePlayManager(); 
+         int i;
+        // static IGameRepository gameRepository= new IGameRepository();
+        private static Game game= new Game();
+        static GamePlayManager gamePlayManager= new GamePlayManager();
         static Stopwatch stopwatch= new Stopwatch();
         HttpClient http= new HttpClient();
-        static bool StartGame = false;
+        int clock=10;
+
+       public async Task NewMessage(string username, string message)
+        {
+            await Clients.All.SendAsync("messageReceived", username, message);
+            // ("Reached here");
+        }
+        public async Task SendMessage (string user, string message) {
+            await Clients.All.SendAsync ("ReceiveMessage", user, message);
+        }
+
+        public async Task StartClock () {
+            while(clock>=0)
+            {
+                await Clients.All.SendAsync ("ClockStarted", clock);
+            }
+            clock=10;
+        }
         public  async Task OnConnectedAsync (string username, string topic,  int noOfPlayers)
-        { 
-                
+        {
+            
             if (noOfPlayers==1)
             {
                 gamePlayManager.Create_Game(username, topic, 1);
-                HttpResponseMessage response = await this.http.GetAsync("http://172.23.238.164:8080/api/quizrt/question");
-                HttpContent content = response.Content;
-                string data = await content.ReadAsStringAsync();
-                JArray json = JArray.Parse(data);
-                Random random = new Random();
+                // HttpResponseMessage response = await this.http.GetAsync("http://172.23.238.164:8080/api/quizrt/question");
+                // HttpContent content = response.Content;
+                // string data = await content.ReadAsStringAsync();
+                // JArray json = JArray.Parse(data);
+                // Random random = new Random();
                 for (i=0;i<7;i++)
                     {
-                        Console.WriteLine("came here");
-                        await Clients.Caller.SendAsync("SendQuestions", json[random.Next(1,json.Count)]);
+                        Console.WriteLine("came here1");
+                        await Clients.Caller.SendAsync("SendQuestions", "Hi");
                         Thread.Sleep(10000);
                     }
 
             }
             else if (noOfPlayers>1)
             {
+                try{
+                    Console.WriteLine("came here 1");
                 if (game.Topic==topic)
-                { 
-                   StartGame = game.AddUsersToGame(username, game);
-                    if(StartGame)
+                {
+                    Console.WriteLine("came here 2");
+                   game = game.AddUsersToGame(username, game);
+                    if(game!=null)
                     {
-                        HttpResponseMessage response = await this.http.GetAsync ("http://172.23.238.164:8080/api/quizrt/question");
-                        HttpContent content = response.Content;
-                        string data = await content.ReadAsStringAsync();
-                        JArray json = JArray.Parse(data);
-                        Random random = new Random();
+                        Console.WriteLine("came here 6");
+                        // HttpResponseMessage response = await this.http.GetAsync ("http://172.23.238.164:8080/api/quizrt/question");
+                        // HttpContent content = response.Content;
+                        // string data = await content.ReadAsStringAsync();
+                        // JArray json = JArray.Parse(data);
+                        // Random random = new Random();
                         for (i=0;i<7;i++)
                         {
-                            Console.WriteLine("came here");
-                            await Clients.Groups(game.GameId).SendAsync("SendQuestions", json[random.Next(1,json.Count)]);
+                            Console.WriteLine("came here 3");
+                            await Clients.All.SendAsync("SendQuestions", "Hi");
                             Thread.Sleep(10000);
                         }
 
                     }
-                    else if(game.NumberOfPlayersJoined<noOfPlayers)
+                    else
                     {
-                        await Clients.All.SendAsync("SendQuestions", "game plan changed");
+                        Console.WriteLine("came here 7");
+                        await Clients.All.SendAsync("SendQuestions", "No Players Joined... Can't Play");
                     }
                 }
+                
+                // catch(Exception e)
+                // {
+                //     // throw new Exception("Not Working ",e);
+                
                 else
                 {
-                   gamePlayManager.Create_Game (username, topic, noOfPlayers);
+
+                    Console.WriteLine("came here 4");
+                    game = gamePlayManager.Create_Game (username, topic, noOfPlayers);
+                //    throw new Exception("Not Working ",e);
+                }
+                }
+                catch(Exception e)
+                {
+                    throw new Exception("Not Working ", e);
                 }
             }
+            await base.OnConnectedAsync ();
 
 
         }
+
+        public async Task OnDisconnectedAsync (string username) {
+            await Groups.RemoveFromGroupAsync (Context.ConnectionId, "SignalR Users");
+            await Clients.All.SendAsync("usersDisconnect",username); 
+            // await base.OnDisconnectedAsync ();
+        }
+
+        public async Task AddToGroup(string userName, string groupName, int noOfPlayers) {
+            await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
+            // Random group= new Random();
+            // var groupName=group.Next(1,50).ToString();
+            await Clients.Group(groupName).SendAsync("Send", userName, groupName);
+        }
     }
 }
+

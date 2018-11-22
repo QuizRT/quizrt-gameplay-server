@@ -52,6 +52,7 @@ namespace gameplay_back.Models {
             NumberOfPlayersRequired = NumberOfPlayers;
             NumberOfPlayersJoined = 1;
             Topic = topic;
+            Users = new List<string>();
             Users.Add(username);
             GameOver=false;
             GameStarted=false;
@@ -61,9 +62,11 @@ namespace gameplay_back.Models {
         {
             game.Users.Add(username);
             game.NumberOfPlayersJoined++;
+            Console.WriteLine("no of players joined " + game.NumberOfPlayersJoined);
             Stopwatch stopwatch= new Stopwatch();
-            while (game.NumberOfPlayersJoined<game.NumberOfPlayersRequired && stopwatch.ElapsedMilliseconds<=60000)
+            while (game.NumberOfPlayersJoined<game.NumberOfPlayersRequired && stopwatch.ElapsedMilliseconds<=10000)
             {
+                Console.WriteLine("Timer Started tik tok");
                 Thread.Sleep(1000);
             }
             stopwatch.Stop();
@@ -75,6 +78,7 @@ namespace gameplay_back.Models {
             }
             else
             {
+                Console.WriteLine("No Players found.. So comes here");
                 game=null;
             }
             return game;
@@ -88,29 +92,40 @@ namespace gameplay_back.Models {
         public Dictionary<string, Game> PendingGames{get; set;}
         public List<Game> RunningGames{get; set;}
 
+        
+        static GamePlayManager gameplaymanager = new GamePlayManager();
         public Game Create_Game(string username, string topic, int no_Of_Players)
         {
             //Where to create the gameplay object. Here or globally
+            // GamePlayManager gameplaymanager = new GamePlayManager();
              Game game = new Game(username, topic, no_Of_Players);
             if (no_Of_Players==1)
             {
+                RunningGames = new List<Game>();
                 RunningGames.Add(game);
             }
             else
             {
+                PendingGames = new Dictionary<string, Game>();
                PendingGames.Add(game.GameId,game);
+               Console.WriteLine(PendingGames[game.GameId]);
             }
             return game;
         }
 
         public Game TransferFromPendingGamesToRunningGames(Game game)
         {
+            RunningGames = new List<Game>();
+            PendingGames =  new Dictionary<string, Game>();
             RunningGames.Add(game);
-            var remove = PendingGames.Where(p => p.Value ==  game); 
-            
+            var remove = PendingGames.Where(p => p.Value ==  game);
+            game.PendingGame=false;
+            game.GameStarted= false;
             return game;
 
         }
+
+        public GamePlayManager() {}
     }
 
 }
