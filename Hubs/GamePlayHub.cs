@@ -38,7 +38,8 @@ namespace gameplay_back.hubs
         public async Task StartClock () {
             while(clock>=0)
             {
-                await Clients.All.SendAsync ("ClockStarted", clock);
+                await Clients.All.SendAsync ("ClockStarted", clock--);
+                Thread.Sleep(1000);
             }
             clock=10;
         }
