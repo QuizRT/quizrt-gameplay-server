@@ -105,7 +105,7 @@ namespace gameplay_back.hubs
                 //    throw new Exception("Not Working ",e);
                 }
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     throw new Exception("Not Working ", e);
                 }

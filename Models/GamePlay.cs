@@ -7,15 +7,6 @@ using System.Diagnostics;
 using System.Threading;
 using System.IO;
 namespace gameplay_back.Models {
-
-//    public class User
-//    {
-//        string username;
-//        string topic;
-//        int no_of_players;
-
-
-//    }
     public class Questions
     {
         public int QuestionsId { get; set; }
@@ -89,34 +80,28 @@ namespace gameplay_back.Models {
 
     public class GamePlayManager
     {
-        public Dictionary<string, Game> PendingGames{get; set;}
-        public List<Game> RunningGames{get; set;}
-
-        
+        // public Dictionary<string, Game> PendingGames{get; set;}
+        static List<Game> RunningGames = new List<Game>();
+        static Dictionary<string, Game> PendingGames = new Dictionary<string, Game>();
         static GamePlayManager gameplaymanager = new GamePlayManager();
         public Game Create_Game(string username, string topic, int no_Of_Players)
         {
-            //Where to create the gameplay object. Here or globally
-            // GamePlayManager gameplaymanager = new GamePlayManager();
+            
              Game game = new Game(username, topic, no_Of_Players);
             if (no_Of_Players==1)
             {
-                RunningGames = new List<Game>();
                 RunningGames.Add(game);
             }
             else
             {
-                PendingGames = new Dictionary<string, Game>();
-               PendingGames.Add(game.GameId,game);
-               Console.WriteLine(PendingGames[game.GameId]);
+                PendingGames.Add(game.GameId,game);
+                Console.WriteLine(PendingGames[game.GameId]);
             }
             return game;
         }
 
         public Game TransferFromPendingGamesToRunningGames(Game game)
         {
-            RunningGames = new List<Game>();
-            PendingGames =  new Dictionary<string, Game>();
             RunningGames.Add(game);
             var remove = PendingGames.Where(p => p.Value ==  game);
             game.PendingGame=false;
@@ -125,6 +110,10 @@ namespace gameplay_back.Models {
 
         }
 
+        public Dictionary<string,Game> GetPendingGames()
+        {
+            return PendingGames;
+        }
         public GamePlayManager() {}
     }
 

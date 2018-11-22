@@ -11,16 +11,22 @@ namespace gameplay_back.Controllers
     [ApiController]
     public class GamePlayController : ControllerBase
     {
-        // IGameRepository GameRepository= null;
-
-        // public GamePlayController(IGameRepository _ListRepo){
-        //     this.GameRepository = _ListRepo;
-        // }
-        // GET api/values
+        GamePlayManager gameplaymanager = null;
+         public GamePlayController(GamePlayManager _Gameplaymanager){
+            this.gameplaymanager = _Gameplaymanager;
+        }
         [HttpGet]
-        public ActionResult<IEnumerable<string>> Get()
+        public IActionResult Get_Pending_Games()
         {
-            return new string[] { "value1", "value2" };
+            var get_pending_games = gameplaymanager.GetPendingGames();
+            if(get_pending_games!=null)
+            {
+                return Ok(get_pending_games);
+            }
+            else
+            {
+                return NotFound("No Pending games found");
+            }
         }
 
         // GET api/values/5
