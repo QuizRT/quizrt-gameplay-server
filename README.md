@@ -1,1 +1,1 @@
-This contains the database for the users who have joined the joined the game.
+Contains functions for single and multiplayer games
