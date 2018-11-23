@@ -49,29 +49,11 @@ namespace gameplay_back.Models {
             GameStarted=false;
             PendingGame=true;
         }
+
         public Game AddUsersToGame(string username, Game game)
         {
             game.Users.Add(username);
             game.NumberOfPlayersJoined++;
-            Console.WriteLine("no of players joined " + game.NumberOfPlayersJoined);
-            Stopwatch stopwatch= new Stopwatch();
-            while (game.NumberOfPlayersJoined<game.NumberOfPlayersRequired && stopwatch.ElapsedMilliseconds<=10000)
-            {
-                Console.WriteLine("Timer Started tik tok");
-                Thread.Sleep(1000);
-            }
-            stopwatch.Stop();
-            if (game.NumberOfPlayersJoined==game.NumberOfPlayersRequired)
-            {
-                GamePlayManager gamePlayManager = new GamePlayManager();
-                game = gamePlayManager.TransferFromPendingGamesToRunningGames(game);
-                return game;
-            }
-            else
-            {
-                Console.WriteLine("No Players found.. So comes here");
-                game=null;
-            }
             return game;
         }
         public Game() {}
@@ -80,22 +62,45 @@ namespace gameplay_back.Models {
 
     public class GamePlayManager
     {
-        // public Dictionary<string, Game> PendingGames{get; set;}
         static List<Game> RunningGames = new List<Game>();
         static Dictionary<string, Game> PendingGames = new Dictionary<string, Game>();
         static GamePlayManager gameplaymanager = new GamePlayManager();
+        static Game game = new Game();
         public Game Create_Game(string username, string topic, int no_Of_Players)
         {
-            
-             Game game = new Game(username, topic, no_Of_Players);
             if (no_Of_Players==1)
             {
+                game = new Game(username, topic, no_Of_Players);
                 RunningGames.Add(game);
             }
-            else
+            else if (no_Of_Players>1)
             {
-                PendingGames.Add(game.GameId,game);
-                Console.WriteLine(PendingGames[game.GameId]);
+                if(game.Topic == topic)
+                {
+                    game = game.AddUsersToGame(username,game);
+                }
+                else
+                {
+                    game = new Game(username, topic, no_Of_Players);
+                    PendingGames.Add(game.GameId,game);
+                    Stopwatch stopwatch= new Stopwatch();
+                    stopwatch.Start();
+
+                    while (game.NumberOfPlayersJoined<game.NumberOfPlayersRequired && stopwatch.ElapsedMilliseconds<=10000)
+                    {
+                        Thread.Sleep(1000);
+
+                    }
+                    stopwatch.Stop();
+                    if (game.NumberOfPlayersJoined==game.NumberOfPlayersRequired)
+                    {
+                        game = gameplaymanager.TransferFromPendingGamesToRunningGames(game);
+                    }
+                    else
+                    {
+                        game=null;
+                    }
+                }
             }
             return game;
         }

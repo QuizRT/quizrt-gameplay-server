@@ -18,22 +18,13 @@ namespace gameplay_back.hubs
 {
     public class GamePlayHub: Hub
     {
-         int i;
+        int i;
         // static IGameRepository gameRepository= new IGameRepository();
         private static Game game= new Game();
         static GamePlayManager gamePlayManager= new GamePlayManager();
         static Stopwatch stopwatch= new Stopwatch();
         HttpClient http= new HttpClient();
         int clock=10;
-
-       public async Task NewMessage(string username, string message)
-        {
-            await Clients.All.SendAsync("messageReceived", username, message);
-            // ("Reached here");
-        }
-        public async Task SendMessage (string user, string message) {
-            await Clients.All.SendAsync ("ReceiveMessage", user, message);
-        }
 
         public async Task StartClock () {
             while(clock>=0)
@@ -45,70 +36,25 @@ namespace gameplay_back.hubs
         }
         public  async Task OnConnectedAsync (string username, string topic,  int noOfPlayers)
         {
-            
-            if (noOfPlayers==1)
-            {
-                gamePlayManager.Create_Game(username, topic, 1);
-                // HttpResponseMessage response = await this.http.GetAsync("http://172.23.238.164:8080/api/quizrt/question");
-                // HttpContent content = response.Content;
-                // string data = await content.ReadAsStringAsync();
-                // JArray json = JArray.Parse(data);
-                // Random random = new Random();
-                for (i=0;i<7;i++)
-                    {
-                        Console.WriteLine("came here1");
-                        await Clients.Caller.SendAsync("SendQuestions", "Hi");
-                        Thread.Sleep(10000);
-                    }
-
-            }
-            else if (noOfPlayers>1)
-            {
-                try{
-                    Console.WriteLine("came here 1");
-                if (game.Topic==topic)
-                {
-                    Console.WriteLine("came here 2");
-                   game = game.AddUsersToGame(username, game);
-                    if(game!=null)
-                    {
-                        Console.WriteLine("came here 6");
+            game = gamePlayManager.Create_Game(username, topic, noOfPlayers);
                         // HttpResponseMessage response = await this.http.GetAsync ("http://172.23.238.164:8080/api/quizrt/question");
                         // HttpContent content = response.Content;
                         // string data = await content.ReadAsStringAsync();
                         // JArray json = JArray.Parse(data);
                         // Random random = new Random();
-                        for (i=0;i<7;i++)
-                        {
-                            Console.WriteLine("came here 3");
-                            await Clients.All.SendAsync("SendQuestions", "Hi");
-                            Thread.Sleep(10000);
-                        }
-
-                    }
-                    else
-                    {
-                        Console.WriteLine("came here 7");
-                        await Clients.All.SendAsync("SendQuestions", "No Players Joined... Can't Play");
-                    }
-                }
-                
-                // catch(Exception e)
-                // {
-                //     // throw new Exception("Not Working ",e);
-                
-                else
-                {
-
-                    Console.WriteLine("came here 4");
-                    game = gamePlayManager.Create_Game (username, topic, noOfPlayers);
-                //    throw new Exception("Not Working ",e);
-                }
-                }
-                catch (Exception e)
-                {
-                    throw new Exception("Not Working ", e);
-                }
+                        // for (i=0;i<7;i++)
+                        // {
+                        //     Console.WriteLine("came here 3");
+                        //     await Clients.All.SendAsync("SendQuestions", "Hi");
+                        //     Thread.Sleep(10000);
+                        // }
+            if(game!= null)
+            {
+                await Clients.All.SendAsync("SendQuestions", "Hi");
+            }
+            else
+            {
+                await Clients.Caller.SendAsync("SendQuestions", "Can't find " + noOfPlayers + " players... Go Back");
             }
             await base.OnConnectedAsync ();
 
