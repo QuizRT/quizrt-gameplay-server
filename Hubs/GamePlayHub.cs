@@ -18,43 +18,38 @@ namespace gameplay_back.hubs
 {
     public class GamePlayHub: Hub
     {
-        int i;
-        // static IGameRepository gameRepository= new IGameRepository();
+        static int i=0;
         private static Game game= new Game();
         static GamePlayManager gamePlayManager= new GamePlayManager();
-        static Stopwatch stopwatch= new Stopwatch();
         HttpClient http= new HttpClient();
-        int clock=10;
 
-        public async Task StartClock () {
-            while(clock>=0)
-            {
-                await Clients.All.SendAsync ("ClockStarted", clock--);
-                Thread.Sleep(1000);
-            }
-            clock=10;
+        public async Task SendQuestions(string groupName)
+        {
+            // HttpResponseMessage response = await this.http.GetAsync ("http://172.23.238.164:8080/api/quizrt/question");
+                // HttpContent content = response.Content;
+                // string data = await content.ReadAsStringAsync();
+                // JArray json = JArray.Parse(data);
+                // Random random = new Random();
+                for(i=0;i<7;i++)
+                {
+                    await Clients.Groups(groupName).SendAsync("QuestionsReceived", "Hi "+ i);
+                    Thread.Sleep(10000);
+                }
+        }
+        public async Task StartClock (string groupName) {
+                Console.WriteLine("came to clock");
+                await Clients.Groups(groupName).SendAsync ("ClockStarted", true);
         }
         public  async Task OnConnectedAsync (string username, string topic,  int noOfPlayers)
         {
             game = gamePlayManager.Create_Game(username, topic, noOfPlayers);
-                        // HttpResponseMessage response = await this.http.GetAsync ("http://172.23.238.164:8080/api/quizrt/question");
-                        // HttpContent content = response.Content;
-                        // string data = await content.ReadAsStringAsync();
-                        // JArray json = JArray.Parse(data);
-                        // Random random = new Random();
-                        // for (i=0;i<7;i++)
-                        // {
-                        //     Console.WriteLine("came here 3");
-                        //     await Clients.All.SendAsync("SendQuestions", "Hi");
-                        //     Thread.Sleep(10000);
-                        // }
             if(game!= null)
             {
-                await Clients.All.SendAsync("SendQuestions", "Hi");
+                await Clients.Caller.SendAsync("usersConnected", game.GameId);
             }
             else
             {
-                await Clients.Caller.SendAsync("SendQuestions", "Can't find " + noOfPlayers + " players... Go Back");
+                await Clients.Caller.SendAsync("usersConnected", null);
             }
             await base.OnConnectedAsync ();
 
@@ -63,15 +58,12 @@ namespace gameplay_back.hubs
 
         public async Task OnDisconnectedAsync (string username) {
             await Groups.RemoveFromGroupAsync (Context.ConnectionId, "SignalR Users");
-            await Clients.All.SendAsync("usersDisconnect",username); 
-            // await base.OnDisconnectedAsync ();
+            await Clients.All.SendAsync("usersDisconnect",username);
         }
 
-        public async Task AddToGroup(string userName, string groupName, int noOfPlayers) {
+        public async Task AddToGroup(string userName, string groupName) {
             await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
-            // Random group= new Random();
-            // var groupName=group.Next(1,50).ToString();
-            await Clients.Group(groupName).SendAsync("Send", userName, groupName);
+            await Clients.Group(groupName).SendAsync("SendToGroup", true);
         }
     }
 }

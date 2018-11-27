@@ -37,8 +37,8 @@ namespace gameplay_back.Models {
         public bool PendingGame{get; set;}
 
         public Game (string username, string topic, int NumberOfPlayers) {
-            Guid guid= new Guid();
-            GameId = guid.ToString();
+            Random random = new Random();
+            GameId = topic + random.Next(1,1000);
             QuestionTimeout = 10;
             NumberOfPlayersRequired = NumberOfPlayers;
             NumberOfPlayersJoined = 1;
@@ -86,7 +86,7 @@ namespace gameplay_back.Models {
                     Stopwatch stopwatch= new Stopwatch();
                     stopwatch.Start();
 
-                    while (game.NumberOfPlayersJoined<game.NumberOfPlayersRequired && stopwatch.ElapsedMilliseconds<=10000)
+                    while (game.NumberOfPlayersJoined<game.NumberOfPlayersRequired && stopwatch.ElapsedMilliseconds<=20000)
                     {
                         Thread.Sleep(1000);
 
