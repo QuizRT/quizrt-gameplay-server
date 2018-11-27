@@ -22,6 +22,7 @@ namespace gameplay_back.hubs
         private static Game game= new Game();
         static GamePlayManager gamePlayManager= new GamePlayManager();
         HttpClient http= new HttpClient();
+        static int countPlayersJoined = 0;
 
         public async Task SendQuestions(string groupName)
         {
@@ -30,15 +31,10 @@ namespace gameplay_back.hubs
                 // string data = await content.ReadAsStringAsync();
                 // JArray json = JArray.Parse(data);
                 // Random random = new Random();
-                for(i=0;i<7;i++)
-                {
-                    await Clients.Groups(groupName).SendAsync("QuestionsReceived", "Hi "+ i);
-                    Thread.Sleep(10000);
-                }
+            await Clients.Group(groupName).SendAsync("QuestionsReceived", "Hi "+ i++);
         }
         public async Task StartClock (string groupName) {
-                Console.WriteLine("came to clock");
-                await Clients.Groups(groupName).SendAsync ("ClockStarted", true);
+                await Clients.Caller.SendAsync ("ClockStarted", true);
         }
         public  async Task OnConnectedAsync (string username, string topic,  int noOfPlayers)
         {
@@ -56,14 +52,29 @@ namespace gameplay_back.hubs
 
         }
 
+        public async Task SendTicks(string groupName, int counter)
+        {
+            await Clients.OthersInGroup(groupName).SendAsync("GetTicks", counter);
+        }
+
+        public async Task SendScore(string groupName,string username, int score)
+        {
+            await Clients.OthersInGroup(groupName).SendAsync("GetScore",username,score);
+        }
+
         public async Task OnDisconnectedAsync (string username) {
             await Groups.RemoveFromGroupAsync (Context.ConnectionId, "SignalR Users");
             await Clients.All.SendAsync("usersDisconnect",username);
         }
 
-        public async Task AddToGroup(string userName, string groupName) {
+        public async Task AddToGroup(string userName, string groupName,int noOfPlayers) {
             await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
-            await Clients.Group(groupName).SendAsync("SendToGroup", true);
+            countPlayersJoined++;
+            await Clients.Caller.SendAsync("SendToGroup", countPlayersJoined);
+            if(countPlayersJoined == noOfPlayers)
+            {
+                countPlayersJoined = 0;
+            }
         }
     }
 }
