@@ -26,12 +26,13 @@ namespace gameplay_back.hubs
 
         public async Task SendQuestions(string groupName)
         {
-            // HttpResponseMessage response = await this.http.GetAsync ("http://172.23.238.164:8080/api/quizrt/question");
-                // HttpContent content = response.Content;
-                // string data = await content.ReadAsStringAsync();
-                // JArray json = JArray.Parse(data);
-                // Random random = new Random();
-            await Clients.Group(groupName).SendAsync("QuestionsReceived", "Hi "+ i++);
+            HttpResponseMessage response = await this.http.GetAsync ("http://172.23.238.164:8080/api/quizrt/question/book");
+                HttpContent content = response.Content;
+                string data = await content.ReadAsStringAsync();
+                JArray json = JArray.Parse(data);
+                Random random = new Random();
+                // Console.WriteLine("--OO--"+json[0]["questionsList"][random.Next(0,5)]);
+            await Clients.Group(groupName).SendAsync("QuestionsReceived", json[random.Next(0,4)]["questionsList"][random.Next(0,5)] );
         }
         public async Task StartClock (string groupName) {
                 await Clients.Caller.SendAsync ("ClockStarted", true);
@@ -42,14 +43,17 @@ namespace gameplay_back.hubs
             if(game!= null)
             {
                 await Clients.Caller.SendAsync("usersConnected", game.GameId);
+                game = null;
             }
             else
             {
                 await Clients.Caller.SendAsync("usersConnected", null);
             }
             await base.OnConnectedAsync ();
-
-
+        }
+        public async Task GameOver(string groupName)
+        {
+            await Clients.OthersInGroup(groupName).SendAsync("GameOver");
         }
 
         public async Task SendTicks(string groupName, int counter)
