@@ -75,7 +75,7 @@ namespace gameplay_back.Models {
             }
             else if (no_Of_Players>1)
             {
-                if(game.Topic == topic)
+                if(game.Topic == topic && no_Of_Players == game.NumberOfPlayersRequired)
                 {
                     game = game.AddUsersToGame(username,game);
                 }

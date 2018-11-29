@@ -26,7 +26,7 @@ namespace gameplay_back.hubs
 
         public async Task SendQuestions(string groupName)
         {
-            HttpResponseMessage response = await this.http.GetAsync ("http://172.23.238.164:8080/api/quizrt/question/book");
+            HttpResponseMessage response = await this.http.GetAsync ("http://172.23.238.164:8080/api/quizrt/questions/book");
                 HttpContent content = response.Content;
                 string data = await content.ReadAsStringAsync();
                 JArray json = JArray.Parse(data);
