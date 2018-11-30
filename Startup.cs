@@ -33,6 +33,8 @@ namespace GamePlay {
                     .AllowAnyOrigin();
             }));
             services.AddSignalR ();
+            services.AddSingleton<GamePlay.Models.GamePlayManager>();
+            services.AddSingleton<GamePlay.Models.GamePlay>();
 
 
         }
