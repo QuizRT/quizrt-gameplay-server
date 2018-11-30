@@ -6,7 +6,16 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics;
 using System.Threading;
 using System.IO;
-namespace GamePlay.Models {
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.SignalR;
+using GamePlay.Hubs;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System.Net.Http;
+
+
+namespace GamePlay.Models 
+{
     public class Questions
     {
         public int QuestionsId { get; set; }
@@ -39,41 +48,89 @@ namespace GamePlay.Models {
         public static String GetTimestamp(DateTime value) {
             return value.ToString("yyyyMMddHHmmssffff");
         }
-        public Game (string username, string topic, int NumberOfPlayers) {
+        public Game (string username, string topic, int numberOfPlayers) 
+        {
             String timeStamp = GetTimestamp(DateTime.Now);
             GameId = topic + timeStamp ;
             QuestionTimeout = 10;
-            NumberOfPlayersRequired = NumberOfPlayers;
+            NumberOfPlayersRequired = numberOfPlayers;
             NumberOfPlayersJoined = 1;
             Topic = topic;
             Users = new List<string>();
             Users.Add(username);
-            GameOver=false;
-            GameStarted=false;
-            PendingGame=true;
+            GameOver = false;
+            GameStarted = false;
+            PendingGame = true;
         }
 
-        public Game AddUsersToGame(string username, Game game)
+        public void AddUsersToGame(string username)
         {
-            game.Users.Add(username);
-            game.NumberOfPlayersJoined++;
-            return game;
+            Users.Add(username);
+            NumberOfPlayersJoined++;
         }
-        public Game() {}
+    }
+    
+    public class GamePlay
+    {
+        private IHubContext<GamePlayHub> _hub;
+        public HttpClient _http;
+        public GamePlay(IHubContext<GamePlayHub> gamePlayHub)
+        {
+            this._hub = gamePlayHub;
+            this._http = new HttpClient();
+        }
+        public async Task StartGame(Game game)
+        {
+            Console.WriteLine("Starting the Game");
+            HttpResponseMessage response = await this._http.GetAsync("http://172.23.238.164:8080/api/quizrt/questions/book");
+            HttpContent content = response.Content;
+            string data = await content.ReadAsStringAsync();
+            JArray json = JArray.Parse(data);
+            Random random = new Random();
+            // Console.WriteLine("--OO--"+json[0]["questionsList"][random.Next(0,5)]);
+            await _hub.Clients.Group(game.GameId).SendAsync("QuestionsReceived", json[random.Next(0, 3)]["questionsList"][random.Next(0, 5)]);
+        }
 
+        public async Task NotifyNoOpponentsFound(Game game)
+        {
+            Console.WriteLine("Notifying No Opponents Found");
+            await _hub.Clients.Group(game.GameId).SendAsync("NoOpponentsFound");
+        }
     }
 
     public class GamePlayManager
     {
         static List<Game> RunningGames = new List<Game>();
         static ICollection<Game> PendingGames = new List<Game>();
-        static GamePlayManager gameplaymanager = new GamePlayManager();
-        // static ICollection<Game> games = new List<Game>();
-        int flag = 0;
 
-        static Game game = new Game();
-        public Game CreateGame(string username, string topic, int noOfPlayers)
+        private GamePlay _gamePlay;
+        
+        public GamePlayManager(GamePlay gamePlay)
         {
+            _gamePlay = gamePlay;
+        }
+
+        public void OnTimerElapsed(object stateInfo)
+        {
+            var game = (Game)stateInfo;
+            if (game.NumberOfPlayersJoined != game.NumberOfPlayersRequired)
+            {
+                Console.WriteLine("TimerElapsed Hence Removing the Pending Game Object");
+                PendingGames.Remove(game);
+                _gamePlay.NotifyNoOpponentsFound(game);
+            }
+            else
+            {
+                Console.WriteLine("TimerElapsed. Met the conditions of the game. Starting with the Game.");
+                RunningGames.Add(game);
+                PendingGames.Remove(game);
+                _gamePlay.StartGame(game);             
+            }
+        }
+
+        public string CreateGame(string username, string topic, int noOfPlayers)
+        {
+            Game game;
             if (noOfPlayers == 1)
             {
                 game =  new Game(username, topic, noOfPlayers);
@@ -81,59 +138,23 @@ namespace GamePlay.Models {
             }
             else
             {
-                Console.WriteLine("came here 1");
-                foreach(var eachGame in PendingGames)
-                {
-                    Console.WriteLine("came here 2");
-                    if(eachGame.Topic == topic && noOfPlayers == eachGame.NumberOfPlayersRequired)
-                    {
+                game = PendingGames.Where(p => p.Topic == topic && p.NumberOfPlayersRequired == noOfPlayers).FirstOrDefault();
 
-                        Console.WriteLine(eachGame.Topic + " " + eachGame.NumberOfPlayersRequired);
-                        game = eachGame.AddUsersToGame(username, eachGame);
-                        Console.WriteLine("came here 4");
-                        flag = 1;
-                        break;
-                    }
-                }
-                // if (game.Topic == topic && noOfPlayers == game.NumberOfPlayersRequired)
-                // {
-                //     Console.WriteLine("came here 1");
-                //     game = game.AddUsersToGame(username, game);
-                // }
-                if(flag==0)
+                if (game is null)
                 {
-                    Console.WriteLine("came here 5");
+                    Console.WriteLine("No existing Game. Hence creating a New Game.");
                     game = new Game(username, topic, noOfPlayers);
                     PendingGames.Add(game);
-                    Stopwatch stopwatch= new Stopwatch();
-                    stopwatch.Start();
-
-                    while (game.NumberOfPlayersJoined<game.NumberOfPlayersRequired && stopwatch.ElapsedMilliseconds<=20000)
-                    {
-                        Thread.Sleep(1000);
-
-                    }
-                    stopwatch.Stop();
-                    if (game.NumberOfPlayersJoined==game.NumberOfPlayersRequired)
-                    {
-                        game = gameplaymanager.TransferFromPendingGamesToRunningGames(game);
-                    }
-                    else
-                    {
-                        game=null;
-                    }
+                    // var gamePlay = new GamePlay(game, startGame, notifyNoOpponentsFound);
+                    var timer = new System.Threading.Timer(OnTimerElapsed, game, 10000, -1);
+                }
+                else
+                {
+                    Console.WriteLine("Adding Player to the existing Game");
+                    game.AddUsersToGame(username);
                 }
             }
-            return game;
-        }
-
-        public Game TransferFromPendingGamesToRunningGames(Game game)
-        {
-            RunningGames.Add(game);
-            PendingGames.Remove(game);
-            game.PendingGame=false;
-            game.GameStarted= false;
-            return game;
+            return game.GameId;
         }
 
         public ICollection<Game> GetPendingGames()

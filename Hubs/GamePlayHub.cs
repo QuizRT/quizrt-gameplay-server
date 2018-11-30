@@ -20,40 +20,28 @@ namespace GamePlay.Hubs
     public class GamePlayHub : Hub
     {
         // static int i = 0;
-        private static Game game = new Game();
-        static GamePlayManager gamePlayManager = new GamePlayManager();
-        HttpClient http = new HttpClient();
+        
         static int countPlayersJoined = 0;
 
-        public async Task SendQuestions(string groupName)
+        private GamePlayManager _gamePlayManager;
+
+        public GamePlayHub(GamePlayManager gamePlayManager)
         {
-            HttpResponseMessage response = await this.http.GetAsync("http://172.23.238.164:8080/api/quizrt/questions/book");
-            HttpContent content = response.Content;
-            string data = await content.ReadAsStringAsync();
-            JArray json = JArray.Parse(data);
-            Random random = new Random();
-            // Console.WriteLine("--OO--"+json[0]["questionsList"][random.Next(0,5)]);
-            await Clients.Group(groupName).SendAsync("QuestionsReceived", json[random.Next(0, 3)]["questionsList"][random.Next(0, 5)]);
+            _gamePlayManager = gamePlayManager;
         }
         public async Task StartClock(string groupName)
         {
             await Clients.Caller.SendAsync("ClockStarted", true);
         }
-        public async Task OnConnectedAsync(string username, string topic, int noOfPlayers)
+        
+        public async Task Init(string username, string topic, int noOfPlayers)
         {
-            game = gamePlayManager.CreateGame(username, topic, noOfPlayers);
-            if (game != null)
-            {
-                Console.WriteLine(game.Users[0]+" "+game.Users[1]);
-                await Clients.Caller.SendAsync("usersConnected", game.GameId);
-                game = null;
-            }
-            else
-            {
-                await Clients.Caller.SendAsync("usersConnected", null);
-            }
-            await base.OnConnectedAsync();
+            var gameId = _gamePlayManager.CreateGame(username, topic, noOfPlayers);
+            Console.WriteLine(gameId);
+            Console.WriteLine(Context.ConnectionId);
+            await Groups.AddToGroupAsync(Context.ConnectionId, gameId);
         }
+        
         public async Task GameOver(string groupName)
         {
             await Clients.OthersInGroup(groupName).SendAsync("GameOver");
