@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics;
 using System.Threading;
 using System.IO;
-namespace gameplay_back.Models {
+namespace GamePlay.Models {
     public class Questions
     {
         public int QuestionsId { get; set; }
@@ -36,9 +36,12 @@ namespace gameplay_back.Models {
         public bool GameStarted{get; set;}
         public bool PendingGame{get; set;}
 
+        public static String GetTimestamp(DateTime value) {
+            return value.ToString("yyyyMMddHHmmssffff");
+        }
         public Game (string username, string topic, int NumberOfPlayers) {
-            Random random = new Random();
-            GameId = topic + random.Next(1,1000);
+            String timeStamp = GetTimestamp(DateTime.Now);
+            GameId = topic + timeStamp ;
             QuestionTimeout = 10;
             NumberOfPlayersRequired = NumberOfPlayers;
             NumberOfPlayersJoined = 1;
@@ -63,26 +66,45 @@ namespace gameplay_back.Models {
     public class GamePlayManager
     {
         static List<Game> RunningGames = new List<Game>();
-        static Dictionary<string, Game> PendingGames = new Dictionary<string, Game>();
+        static ICollection<Game> PendingGames = new List<Game>();
         static GamePlayManager gameplaymanager = new GamePlayManager();
+        // static ICollection<Game> games = new List<Game>();
+        int flag = 0;
+
         static Game game = new Game();
-        public Game Create_Game(string username, string topic, int no_Of_Players)
+        public Game CreateGame(string username, string topic, int noOfPlayers)
         {
-            if (no_Of_Players==1)
+            if (noOfPlayers == 1)
             {
-                game = new Game(username, topic, no_Of_Players);
+                game =  new Game(username, topic, noOfPlayers);
                 RunningGames.Add(game);
             }
-            else if (no_Of_Players>1)
+            else
             {
-                if(game.Topic == topic && no_Of_Players == game.NumberOfPlayersRequired)
+                Console.WriteLine("came here 1");
+                foreach(var eachGame in PendingGames)
                 {
-                    game = game.AddUsersToGame(username,game);
+                    Console.WriteLine("came here 2");
+                    if(eachGame.Topic == topic && noOfPlayers == eachGame.NumberOfPlayersRequired)
+                    {
+
+                        Console.WriteLine(eachGame.Topic + " " + eachGame.NumberOfPlayersRequired);
+                        game = eachGame.AddUsersToGame(username, eachGame);
+                        Console.WriteLine("came here 4");
+                        flag = 1;
+                        break;
+                    }
                 }
-                else
+                // if (game.Topic == topic && noOfPlayers == game.NumberOfPlayersRequired)
+                // {
+                //     Console.WriteLine("came here 1");
+                //     game = game.AddUsersToGame(username, game);
+                // }
+                if(flag==0)
                 {
-                    game = new Game(username, topic, no_Of_Players);
-                    PendingGames.Add(game.GameId,game);
+                    Console.WriteLine("came here 5");
+                    game = new Game(username, topic, noOfPlayers);
+                    PendingGames.Add(game);
                     Stopwatch stopwatch= new Stopwatch();
                     stopwatch.Start();
 
@@ -108,18 +130,16 @@ namespace gameplay_back.Models {
         public Game TransferFromPendingGamesToRunningGames(Game game)
         {
             RunningGames.Add(game);
-            var remove = PendingGames.Where(p => p.Value ==  game);
+            PendingGames.Remove(game);
             game.PendingGame=false;
             game.GameStarted= false;
             return game;
-
         }
 
-        public Dictionary<string,Game> GetPendingGames()
+        public ICollection<Game> GetPendingGames()
         {
             return PendingGames;
         }
-        public GamePlayManager() {}
     }
 
 }

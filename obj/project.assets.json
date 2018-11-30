@@ -13577,9 +13577,9 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Adarshi\\Documents\\GitHub\\quizrt-gameplay-server\\gameplay-back.csproj",
-      "projectName": "gameplay-back",
-      "projectPath": "C:\\Users\\Adarshi\\Documents\\GitHub\\quizrt-gameplay-server\\gameplay-back.csproj",
+      "projectUniqueName": "C:\\Users\\Adarshi\\Documents\\GitHub\\quizrt-gameplay-server\\GamePlay.csproj",
+      "projectName": "GamePlay",
+      "projectPath": "C:\\Users\\Adarshi\\Documents\\GitHub\\quizrt-gameplay-server\\GamePlay.csproj",
       "packagesPath": "C:\\Users\\Adarshi\\.nuget\\packages\\",
       "outputPath": "C:\\Users\\Adarshi\\Documents\\GitHub\\quizrt-gameplay-server\\obj\\",
       "projectStyle": "PackageReference",

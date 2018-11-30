@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
-using gameplay_back.Models;
+using GamePlay.Models;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
@@ -14,34 +14,37 @@ using Newtonsoft.Json.Linq;
 using System.Net.Http;
 using System.Diagnostics;
 
-namespace gameplay_back.hubs
+
+namespace GamePlay.Hubs
 {
-    public class GamePlayHub: Hub
+    public class GamePlayHub : Hub
     {
-        static int i=0;
-        private static Game game= new Game();
-        static GamePlayManager gamePlayManager= new GamePlayManager();
-        HttpClient http= new HttpClient();
+        // static int i = 0;
+        private static Game game = new Game();
+        static GamePlayManager gamePlayManager = new GamePlayManager();
+        HttpClient http = new HttpClient();
         static int countPlayersJoined = 0;
 
         public async Task SendQuestions(string groupName)
         {
-            HttpResponseMessage response = await this.http.GetAsync ("http://172.23.238.164:8080/api/quizrt/questions/book");
-                HttpContent content = response.Content;
-                string data = await content.ReadAsStringAsync();
-                JArray json = JArray.Parse(data);
-                Random random = new Random();
-                // Console.WriteLine("--OO--"+json[0]["questionsList"][random.Next(0,5)]);
-            await Clients.Group(groupName).SendAsync("QuestionsReceived", json[random.Next(0,4)]["questionsList"][random.Next(0,5)] );
+            HttpResponseMessage response = await this.http.GetAsync("http://172.23.238.164:8080/api/quizrt/questions/book");
+            HttpContent content = response.Content;
+            string data = await content.ReadAsStringAsync();
+            JArray json = JArray.Parse(data);
+            Random random = new Random();
+            // Console.WriteLine("--OO--"+json[0]["questionsList"][random.Next(0,5)]);
+            await Clients.Group(groupName).SendAsync("QuestionsReceived", json[random.Next(0, 3)]["questionsList"][random.Next(0, 5)]);
         }
-        public async Task StartClock (string groupName) {
-                await Clients.Caller.SendAsync ("ClockStarted", true);
-        }
-        public  async Task OnConnectedAsync (string username, string topic,  int noOfPlayers)
+        public async Task StartClock(string groupName)
         {
-            game = gamePlayManager.Create_Game(username, topic, noOfPlayers);
-            if(game!= null)
+            await Clients.Caller.SendAsync("ClockStarted", true);
+        }
+        public async Task OnConnectedAsync(string username, string topic, int noOfPlayers)
+        {
+            game = gamePlayManager.CreateGame(username, topic, noOfPlayers);
+            if (game != null)
             {
+                Console.WriteLine(game.Users[0]+" "+game.Users[1]);
                 await Clients.Caller.SendAsync("usersConnected", game.GameId);
                 game = null;
             }
@@ -49,7 +52,7 @@ namespace gameplay_back.hubs
             {
                 await Clients.Caller.SendAsync("usersConnected", null);
             }
-            await base.OnConnectedAsync ();
+            await base.OnConnectedAsync();
         }
         public async Task GameOver(string groupName)
         {
@@ -61,21 +64,23 @@ namespace gameplay_back.hubs
             await Clients.OthersInGroup(groupName).SendAsync("GetTicks", counter);
         }
 
-        public async Task SendScore(string groupName,string username, int score)
+        public async Task SendScore(string groupName, string username, int score)
         {
-            await Clients.OthersInGroup(groupName).SendAsync("GetScore",username,score);
+            await Clients.OthersInGroup(groupName).SendAsync("GetScore", username, score);
         }
 
-        public async Task OnDisconnectedAsync (string username) {
-            await Groups.RemoveFromGroupAsync (Context.ConnectionId, "SignalR Users");
-            await Clients.All.SendAsync("usersDisconnect",username);
+        public async Task OnDisconnectedAsync(string username)
+        {
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, "SignalR Users");
+            await Clients.All.SendAsync("usersDisconnect", username);
         }
 
-        public async Task AddToGroup(string userName, string groupName,int noOfPlayers) {
+        public async Task AddToGroup(string userName, string groupName, int noOfPlayers)
+        {
             await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
             countPlayersJoined++;
             await Clients.Caller.SendAsync("SendToGroup", countPlayersJoined);
-            if(countPlayersJoined == noOfPlayers)
+            if (countPlayersJoined == noOfPlayers)
             {
                 countPlayersJoined = 0;
             }

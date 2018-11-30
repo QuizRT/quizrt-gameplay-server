@@ -3,23 +3,24 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using gameplay_back.Models;
+using GamePlay.Models;
 
-namespace gameplay_back.Controllers
+namespace Gameplay.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
     public class GamePlayController : ControllerBase
     {
         GamePlayManager gameplaymanager = null;
-         public GamePlayController(GamePlayManager _Gameplaymanager){
+        public GamePlayController(GamePlayManager _Gameplaymanager)
+        {
             this.gameplaymanager = _Gameplaymanager;
         }
         [HttpGet]
         public IActionResult Get_Pending_Games()
         {
             var get_pending_games = gameplaymanager.GetPendingGames();
-            if(get_pending_games!=null)
+            if (get_pending_games != null)
             {
                 return Ok(get_pending_games);
             }
@@ -41,7 +42,7 @@ namespace gameplay_back.Controllers
             // }
             // else
             // {
-                return NotFound("The game you are looking for cannot be found");
+            return NotFound("The game you are looking for cannot be found");
             // }
         }
         [HttpGet("{topic}")]
@@ -50,11 +51,11 @@ namespace gameplay_back.Controllers
             // var getpending= GameRepository.GetPendingGamesByTopic(topic);
             //  if(getpending!=null)
             //  {
-                //  return Ok(getpending);
+            //  return Ok(getpending);
             //  }
             //  else
             //  {
-                 return NotFound("pending games not anymore..");
+            return NotFound("pending games not anymore..");
             //  }
         }
 
@@ -90,7 +91,7 @@ namespace gameplay_back.Controllers
 
         // }
 
-         [HttpPatch("{id}")]
+        [HttpPatch("{id}")]
         public IActionResult PatchQuestions([FromQuery]int id)
         {
 
@@ -101,7 +102,7 @@ namespace gameplay_back.Controllers
             // }
             // else
             // {
-                return BadRequest("Can't patch.Try Again..");
+            return BadRequest("Can't patch.Try Again..");
             // }
 
         }
