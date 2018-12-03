@@ -19,61 +19,42 @@ namespace GamePlay.Hubs
 {
     public class GamePlayHub : Hub
     {
-        // static int i = 0;
-        // private static Game game = new Game();
-        static GamePlayManager gamePlayManager;
-
-        public GamePlayHub(GamePlayManager _manager)
-        {
-            gamePlayManager = _manager;
-        }
-        HttpClient http = new HttpClient();
         static int countPlayersJoined = 0;
 
-        public async Task SendQuestions(string groupName)
+        private GamePlayManager _gamePlayManager;
+
+        public GamePlayHub(GamePlayManager gamePlayManager)
         {
-            HttpResponseMessage response = await this.http.GetAsync("http://172.23.238.164:7000/questiongenerator/questions/book");
-            HttpContent content = response.Content;
-            string data = await content.ReadAsStringAsync();
-            JArray json = JArray.Parse(data);
-            Random random = new Random();
-            // Console.WriteLine("--OO--"+json[0]["questionsList"][random.Next(0,5)]);
-            await Clients.Group(groupName).SendAsync("QuestionsReceived", json[random.Next(0, 3)]["questionsList"][random.Next(0, 5)]);
+            _gamePlayManager = gamePlayManager;
         }
         public async Task StartClock(string groupName)
         {
             await Clients.Caller.SendAsync("ClockStarted", true);
         }
+        
         public async Task Init(string username, string topic, int noOfPlayers)
         {
-            var gameId = gamePlayManager.CreateGame(username, topic, noOfPlayers);
+            var gameId = _gamePlayManager.CreateGame(username, topic, noOfPlayers);
             Console.WriteLine(gameId);
+            Console.WriteLine(Context.ConnectionId);
             await Groups.AddToGroupAsync(Context.ConnectionId, gameId);
-            // if (gameId != null)
-            // {
-            //     // Console.WriteLine(game.Users[0]+" "+game.Users[1]);
-            //     await Clients.Caller.SendAsync("usersConnected", gameId);
-            //     // game = null;
-            // }
-            // else
-            // {
-            //     await Clients.Caller.SendAsync("usersConnected", null);
-            // }
-            await base.OnConnectedAsync();
+            GamePlayManager.weakReferences.Select(r => r.IsAlive).ToList().ForEach(Console.WriteLine);
         }
-        public async Task GameOver(string groupName)
-        {
-            await Clients.OthersInGroup(groupName).SendAsync("GameOver");
-        }
+
+        // public async Task GameOver(string groupName)
+        // {
+        //     await Clients.OthersInGroup(groupName).SendAsync("GameOver");
+        // }
 
         public async Task SendTicks(string groupName, int counter)
         {
             await Clients.OthersInGroup(groupName).SendAsync("GetTicks", counter);
         }
 
-        public async Task SendScore(string groupName, string username, int score)
+        public async Task CalculateScore(string groupName, string username,Object option , int counter)
         {
-            await Clients.OthersInGroup(groupName).SendAsync("GetScore", username, score);
+            var score = _gamePlayManager.ScoreCalculator(groupName, username, option, counter);
+            await Clients.Group(groupName).SendAsync("GetScore", username, score);
         }
 
         public async Task OnDisconnectedAsync(string username)

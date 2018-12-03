@@ -1,0 +1,17 @@
+services:
+  gameplaydb:
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: Your_password123
+    image: microsoft/mssql-server-linux
+    ports:
+      - "1433"
+  gameplayweb:
+    build: .
+    environment:
+      SQLSERVER_HOST: Server=gameplaydb;Database=Quiztest3DBLinux;User=sa;Password=Your_password123
+    links:
+      - gameplaydb
+    ports:
+      - "8082:5000"
+version: "3"
