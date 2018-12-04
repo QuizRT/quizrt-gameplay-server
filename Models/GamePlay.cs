@@ -194,7 +194,7 @@ namespace GamePlay.Models
                     // var gamePlay = new GamePlay(game, startGame, notifyNoOpponentsFound);
                     var timer = new System.Threading.Timer(OnTimerElapsed, game, 10000, -1);
                     timerCollection.Add(timer);
-                    timer.Dispose();
+                    // timer.Dispose();
                 }
                 else
                 {
