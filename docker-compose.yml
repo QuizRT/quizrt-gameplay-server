@@ -1,14 +1,5 @@
 version: "3.5"
 services:
-  gameplaydb:
-    environment:
-      ACCEPT_EULA: "Y"
-      SA_PASSWORD: Your_password123
-    image: microsoft/mssql-server-linux
-    networks:
-      - quiz-engine-network
-    ports:
-      - "1433"
   gameplayweb:
     build: .
     labels:
