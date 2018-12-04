@@ -73,20 +73,25 @@ namespace GamePlay.Models
             Users = new List<User>();
             Users.Add(new User(username, 0));
             _http = new HttpClient();
-            Task<bool> vvv = System.Threading.Tasks.Task<string>.Run(() => GetQuestions().Result);
-            Console.WriteLine(Questions+"---------------");
+            //Questions =  new JArray();
+            Task<JArray> Quest = System.Threading.Tasks.Task<string>.Run(() => GetQuestions().Result);
+            Questions = Quest.Result;
+            // Questions = new JArray();
+            // Console.WriteLine(Questions.Count+"---------------");
             GameOver = false;
             GameStarted = false;
             PendingGame = true;
         }
+        public Game() { }
 
-        public async Task<bool> GetQuestions()
+        public async Task<JArray> GetQuestions()
         {
             HttpResponseMessage response = await this._http.GetAsync("http://172.23.238.164:7000/questiongenerator/questions/book");
             HttpContent content = response.Content;
             string data = await content.ReadAsStringAsync();
             Questions = JArray.Parse(data);
-            return true;
+            // Console.WriteLine(Questions.Count+"+++++++++++++++++++");
+            return Questions;
             // Console.WriteLine(Questions);
         }
 
@@ -110,19 +115,18 @@ namespace GamePlay.Models
         {
             Console.WriteLine("Starting the Game");
             Random random = new Random();
-            game.QuestionCount++;
             if (game.QuestionCount >= 7)
             {
                 await _hub.Clients.Group(game.GameId).SendAsync("GameOver");
             }
-            // options.Add(optionname and isCorrect)
-            await _hub.Clients.Group(game.GameId).SendAsync("ProvideGroupId", game.GameId);
-            Console.WriteLine(game.Questions[random.Next(0, 3)]["questionsList"][random.Next(0, 5)]);
-            await _hub.Clients.Group(game.GameId).SendAsync("QuestionsReceived", game.Questions[random.Next(0, 3)]["questionsList"][random.Next(0, 5)]);
-            // await _hub.Clients.Group(game.GameId).SendAsync("QuestionsReceived", "Hii", game.GameId);
-            // await _hub.Clients.Group(game.GameId).SendAsync("SendOptions", game.options);
-            await _hub.Clients.Group(game.GameId).SendAsync("StartClock");
-            var timer = new System.Threading.Timer(NextQuestion, game, 10000, -1);
+            else
+            {
+                await _hub.Clients.Group(game.GameId).SendAsync("ProvideGroupId", game.GameId);
+                await _hub.Clients.Group(game.GameId).SendAsync("QuestionsReceived", game.Questions[0]["questionsList"][random.Next(0, 4)]);
+                game.QuestionCount++;
+                await _hub.Clients.Group(game.GameId).SendAsync("StartClock");
+                var timer = new System.Threading.Timer(NextQuestion, game, 10000, -1);
+            }
         }
 
         public void NextQuestion(Object stateInfo)
@@ -175,6 +179,7 @@ namespace GamePlay.Models
             {
                 game = new Game(username, topic, noOfPlayers);
                 RunningGames.Add(game);
+                _gamePlay.SendQuestions(game);
                 return game.GameId;
             }
             else
@@ -189,6 +194,7 @@ namespace GamePlay.Models
                     // var gamePlay = new GamePlay(game, startGame, notifyNoOpponentsFound);
                     var timer = new System.Threading.Timer(OnTimerElapsed, game, 10000, -1);
                     timerCollection.Add(timer);
+                    timer.Dispose();
                 }
                 else
                 {
@@ -200,19 +206,25 @@ namespace GamePlay.Models
             // return game.GameId;
         }
 
-        public int ScoreCalculator(string groupname, string username, Object options, int counter)
+        public int ScoreCalculator(string groupname, string username, string option, JObject question, int counter)
         {
-            var option = (Options)options;
-            var game = RunningGames.FirstOrDefault(g => g.GameId == groupname);
-            var user = game.Users.FirstOrDefault(t => t.username == username);
-            if (option.IsCorrect == true)
+            // Game game = new Game();
+
+            Console.WriteLine("came to score calculator");
+            Console.WriteLine(RunningGames[0].GameId);
+            Game game = RunningGames.Where(g => g.GameId == groupname).FirstOrDefault();
+            Console.WriteLine(game.GameId);
+            User user = game.Users.FirstOrDefault(t => t.username == username);
+            // Console.WriteLine(game.Questions[0]["questionsList"][0]["correctOption"].GetType());
+            if (question["correctOption"].ToString() == option)
             {
                 user.score += counter * 2;
             }
             else
             {
-                user.score = 0;
+                user.score += 0;
             }
+            Console.WriteLine(user.score);
             return user.score;
         }
 

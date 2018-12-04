@@ -35,8 +35,8 @@ namespace GamePlay.Hubs
         public async Task Init(string username, string topic, int noOfPlayers)
         {
             var gameId = _gamePlayManager.CreateGame(username, topic, noOfPlayers);
-            Console.WriteLine(gameId);
-            Console.WriteLine(Context.ConnectionId);
+            // Console.WriteLine(gameId);
+            // Console.WriteLine(Context.ConnectionId);
             await Groups.AddToGroupAsync(Context.ConnectionId, gameId);
             GamePlayManager.weakReferences.Select(r => r.IsAlive).ToList().ForEach(Console.WriteLine);
         }
@@ -51,9 +51,9 @@ namespace GamePlay.Hubs
             await Clients.OthersInGroup(groupName).SendAsync("GetTicks", counter);
         }
 
-        public async Task CalculateScore(string groupName, string username,Object option , int counter)
+        public async Task CalculateScore(string groupName, string username,string option,JObject question, int counter)
         {
-            var score = _gamePlayManager.ScoreCalculator(groupName, username, option, counter);
+            var score = _gamePlayManager.ScoreCalculator(groupName, username, option,question, counter);
             await Clients.Group(groupName).SendAsync("GetScore", username, score);
         }
 
