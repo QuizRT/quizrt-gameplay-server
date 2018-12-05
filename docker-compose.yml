@@ -6,13 +6,9 @@ services:
       SERVICE_5000_NAME: QuizEngine
     networks:
       - quiz-engine-network
-    environment:
-      SQLSERVER_HOST: Server=gameplaydb;Database=Quiztest3DBLinux;User=sa;Password=Your_password123
     ports:
       - "5000"
-    networks:
-      - quizengine-network
 networks: 
-  quizengine-network:
+  quiz-engine-network:
     name: quizrt-network
     external: true
