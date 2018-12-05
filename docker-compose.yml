@@ -1,20 +1,13 @@
 version: "3.5"
 services:
-  # gameplaydb:
-  #   environment:
-  #     ACCEPT_EULA: "Y"
-  #     SA_PASSWORD: Your_password123
-  #   image: microsoft/mssql-server-linux
-  #   ports:
-  #     - "1433"
   gameplayweb:
     build: .
     labels:
       SERVICE_5000_NAME: QuizEngine
+    networks:
+      - quiz-engine-network
     environment:
       SQLSERVER_HOST: Server=gameplaydb;Database=Quiztest3DBLinux;User=sa;Password=Your_password123
-    links:
-      - gameplaydb
     ports:
       - "5000"
     networks:
