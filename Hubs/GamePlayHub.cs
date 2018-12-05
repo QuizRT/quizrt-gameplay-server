@@ -73,6 +73,11 @@ namespace GamePlay.Hubs
                 countPlayersJoined = 0;
             }
         }
+
+        public async Task SendPendingGames()
+        {
+            _gamePlayManager.GetPendingGames();
+        }
     }
 }
 

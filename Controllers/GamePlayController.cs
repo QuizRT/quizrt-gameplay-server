@@ -17,18 +17,18 @@ namespace Gameplay.Controllers
             this.gameplaymanager = _Gameplaymanager;
         }
         [HttpGet]
-        public IActionResult Get_Pending_Games()
-        {
-            var get_pending_games = gameplaymanager.GetPendingGames();
-            if (get_pending_games != null)
-            {
-                return Ok(get_pending_games);
-            }
-            else
-            {
-                return NotFound("No Pending games found");
-            }
-        }
+        // public IActionResult Get_Pending_Games()
+        // {
+        //     // var get_pending_games = gameplaymanager.GetPendingGames();
+        //     // if (get_pending_games != null)
+        //     // {
+        //     //     return Ok(get_pending_games);
+        //     // }
+        //     // else
+        //     // {
+        //     //     return NotFound("No Pending games found");
+        //     // }
+        // }
 
         // GET api/values/5
         [HttpGet("{id}")]

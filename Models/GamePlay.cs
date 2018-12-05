@@ -12,6 +12,8 @@ using GamePlay.Hubs;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Net.Http;
+using RabbitMQ.Client;
+using System.Text;
 
 
 namespace GamePlay.Models
@@ -86,7 +88,7 @@ namespace GamePlay.Models
 
         public async Task<JArray> GetQuestions()
         {
-            HttpResponseMessage response = await this._http.GetAsync("http://172.23.238.164:7000/questiongenerator/questions/book");
+            HttpResponseMessage response = await this._http.GetAsync("http://172.23.238.164:7000/questiongenerator/questions/skyscraper");
             HttpContent content = response.Content;
             string data = await content.ReadAsStringAsync();
             Questions = JArray.Parse(data);
@@ -117,6 +119,7 @@ namespace GamePlay.Models
             Random random = new Random();
             if (game.QuestionCount >= 7)
             {
+                QueueScore(game.Users);
                 await _hub.Clients.Group(game.GameId).SendAsync("GameOver");
             }
             else
@@ -129,6 +132,34 @@ namespace GamePlay.Models
             }
         }
 
+        public void QueueScore(List<User> user)
+		{
+            Console.WriteLine("--Sending Score to Social--");
+			var factory = new ConnectionFactory() { HostName = "rabbitmq", UserName = "rabbitmq", Password = "rabbitmq" };
+            using (var connection = factory.CreateConnection())
+            using (var channel = connection.CreateModel())
+            {
+                channel.QueueDeclare(
+					queue: "Score",
+					durable: false,
+					exclusive: false,
+					autoDelete: false,
+					arguments: null
+                );
+
+                String jsonifiedUser = JsonConvert.SerializeObject(user);
+                var body = Encoding.UTF8.GetBytes(jsonifiedUser);
+
+                channel.BasicPublish(
+					exchange: "",
+					routingKey: "Score",
+					basicProperties: null,
+					body: body
+                );
+                Console.WriteLine("--{0} Score Queued--", user);
+            }
+        }
+
         public void NextQuestion(Object stateInfo)
         {
             var game = (Game)stateInfo;
@@ -138,6 +169,11 @@ namespace GamePlay.Models
         {
             Console.WriteLine("Notifying No Opponents Found");
             await _hub.Clients.Group(game.GameId).SendAsync("NoOpponentsFound");
+        }
+
+        public async Task SendPendingGamesToUser(ICollection<Game> pendinggames)
+        {
+            await _hub.Clients.All.SendAsync("GetPendingGames", pendinggames);
         }
     }
     public class GamePlayManager
@@ -228,9 +264,9 @@ namespace GamePlay.Models
             return user.score;
         }
 
-        public ICollection<Game> GetPendingGames()
+        public void GetPendingGames()
         {
-            return PendingGames;
+            _gamePlay.SendPendingGamesToUser(PendingGames);
         }
     }
 

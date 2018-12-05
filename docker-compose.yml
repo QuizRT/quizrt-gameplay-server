@@ -1,11 +1,12 @@
+version: "3.5"
 services:
-  gameplaydb:
-    environment:
-      ACCEPT_EULA: "Y"
-      SA_PASSWORD: Your_password123
-    image: microsoft/mssql-server-linux
-    ports:
-      - "1433"
+  # gameplaydb:
+  #   environment:
+  #     ACCEPT_EULA: "Y"
+  #     SA_PASSWORD: Your_password123
+  #   image: microsoft/mssql-server-linux
+  #   ports:
+  #     - "1433"
   gameplayweb:
     build: .
     labels:
@@ -16,4 +17,9 @@ services:
       - gameplaydb
     ports:
       - "5000"
-version: "3"
+    networks:
+      - quizengine-network
+networks: 
+  quizengine-network:
+    name: quizrt-network
+    external: true
