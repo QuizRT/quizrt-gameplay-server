@@ -88,7 +88,7 @@ namespace GamePlay.Models
 
         public async Task<JArray> GetQuestions()
         {
-            HttpResponseMessage response = await this._http.GetAsync("http://172.23.238.164:7000/questiongenerator/questions/skyscraper");
+            HttpResponseMessage response = await this._http.GetAsync("http://172.23.238.164:7000/questiongenerator/questions/"+Topic+"/7");
             HttpContent content = response.Content;
             string data = await content.ReadAsStringAsync();
             Questions = JArray.Parse(data);
@@ -125,7 +125,7 @@ namespace GamePlay.Models
             else
             {
                 await _hub.Clients.Group(game.GameId).SendAsync("ProvideGroupId", game.GameId);
-                await _hub.Clients.Group(game.GameId).SendAsync("QuestionsReceived", game.Questions[0]["questionsList"][random.Next(0, 4)]);
+                await _hub.Clients.Group(game.GameId).SendAsync("QuestionsReceived", game.Questions[random.Next(0,7)]);
                 game.QuestionCount++;
                 await _hub.Clients.Group(game.GameId).SendAsync("StartClock");
                 var timer = new System.Threading.Timer(NextQuestion, game, 10000, -1);
@@ -156,7 +156,7 @@ namespace GamePlay.Models
 					basicProperties: null,
 					body: body
                 );
-                Console.WriteLine("--{0} Score Queued--", user);
+                Console.WriteLine("--{0} Score Queued--", body);
             }
         }
 
