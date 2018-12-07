@@ -134,7 +134,8 @@ namespace GamePlay.Models
             else
             {
                 await _hub.Clients.Group(game.GameId).SendAsync("ProvideGroupId", game.GameId);
-                Console.WriteLine(game.Questions[0]+" ------ ");
+                Console.WriteLine("checking questions coming or not");
+                Console.WriteLine(game.Questions+" ------ ");
                 await _hub.Clients.Group(game.GameId).SendAsync("QuestionsReceived", game.Questions[random.Next(0,7)]);
                 game.QuestionCount++;
                 await _hub.Clients.Group(game.GameId).SendAsync("StartClock");
