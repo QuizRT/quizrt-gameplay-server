@@ -79,7 +79,7 @@ namespace GamePlay.Models
             Task<JArray> Quest = System.Threading.Tasks.Task<string>.Run(() => GetQuestions().Result);
             Questions = Quest.Result;
             // Questions = new JArray();
-            // Console.WriteLine(Questions.Count+"---------------");
+            Console.WriteLine(Questions.Count+"---------------");
             GameOver = false;
             GameStarted = false;
             PendingGame = true;
@@ -240,7 +240,7 @@ namespace GamePlay.Models
                     game = new Game(username, topic, noOfPlayers);
                     PendingGames.Add(game);
                     // var gamePlay = new GamePlay(game, startGame, notifyNoOpponentsFound);
-                    var timer = new System.Threading.Timer(OnTimerElapsed, game, 60000, -1);
+                    var timer = new System.Threading.Timer(OnTimerElapsed, game, 20000, -1);
                     timerCollection.Add(timer);
                     // timer.Dispose();
                 }
