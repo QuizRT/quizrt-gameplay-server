@@ -75,10 +75,9 @@ namespace GamePlay.Models
             Users = new List<User>();
             Users.Add(new User(username, 0));
             _http = new HttpClient();
-            //Questions =  new JArray();
+            Questions =  new JArray();
             Task<JArray> Quest = System.Threading.Tasks.Task<string>.Run(() => GetQuestions().Result);
             Questions = Quest.Result;
-            // Questions = new JArray();
             Console.WriteLine(Questions.Count+"---------------");
             GameOver = false;
             GameStarted = false;
