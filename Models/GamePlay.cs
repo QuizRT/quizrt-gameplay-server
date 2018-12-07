@@ -94,7 +94,8 @@ namespace GamePlay.Models
             HttpContent content = response.Content;
             string data = await content.ReadAsStringAsync();
             Console.WriteLine(data+"Adarshi Is High");
-            JArray ques = JArray.Parse(data);
+            JArray Questions = JArray.Parse(data);
+            Console.WriteLine(Questions+"========");
             Console.WriteLine(Questions.Count+"+++++++++++++++++++");
             }
             catch(Exception e)
