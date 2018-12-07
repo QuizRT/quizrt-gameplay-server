@@ -274,9 +274,9 @@ namespace GamePlay.Models
             return user.score;
         }
 
-        public void GetPendingGames()
+        public async Task GetPendingGames()
         {
-            _gamePlay.SendPendingGamesToUser(PendingGames);
+            await _gamePlay.SendPendingGamesToUser(PendingGames);
         }
     }
 

@@ -76,7 +76,7 @@ namespace GamePlay.Hubs
 
         public async Task SendPendingGames()
         {
-            _gamePlayManager.GetPendingGames();
+           await _gamePlayManager.GetPendingGames();
         }
     }
 }
