@@ -92,7 +92,7 @@ namespace GamePlay.Models
             HttpResponseMessage response = await this._http.GetAsync("http://172.23.238.164:7000/questiongenerator/questions/"+Topic+"/7");
             HttpContent content = response.Content;
             string data = await content.ReadAsStringAsync();
-            Console.WriteLine(data+"Adarshi Is High");
+            // Console.WriteLine(data+"Adarshi Is High");
             JArray Questions = JArray.Parse(data);
             Console.WriteLine(Questions+"========");
             Console.WriteLine(Questions.Count+"+++++++++++++++++++");
@@ -138,8 +138,7 @@ namespace GamePlay.Models
                 await _hub.Clients.Group(game.GameId).SendAsync("ProvideGroupId", game.GameId);
                 Console.WriteLine("checking questions coming or not");
                 Console.WriteLine(game.Questions+" ------ ");
-                await _hub.Clients.Group(game.GameId).SendAsync("QuestionsReceived", game.Questions[random.Next(0,7)]);
-                game.QuestionCount++;
+                await _hub.Clients.Group(game.GameId).SendAsync("QuestionsReceived", game.Questions[game.QuestionCount++]);
                 await _hub.Clients.Group(game.GameId).SendAsync("StartClock");
                 var timer = new System.Threading.Timer(NextQuestion, game, 10000, -1);
             }
