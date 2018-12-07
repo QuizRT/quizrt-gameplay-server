@@ -93,7 +93,8 @@ namespace GamePlay.Models
             HttpResponseMessage response = await this._http.GetAsync("http://172.23.238.164:7000/questiongenerator/questions/"+Topic+"/7");
             HttpContent content = response.Content;
             string data = await content.ReadAsStringAsync();
-            Questions = JArray.Parse(data);
+            Console.WriteLine(data+"Adarshi Is High");
+            JArray ques = JArray.Parse(data);
             Console.WriteLine(Questions.Count+"+++++++++++++++++++");
             }
             catch(Exception e)
