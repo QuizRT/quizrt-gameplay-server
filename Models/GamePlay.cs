@@ -94,8 +94,7 @@ namespace GamePlay.Models
             HttpContent content = response.Content;
             string data = await content.ReadAsStringAsync();
             Questions = JArray.Parse(data);
-            // Console.WriteLine(Questions.Count+"+++++++++++++++++++");
-            
+            Console.WriteLine(Questions.Count+"+++++++++++++++++++");
             }
             catch(Exception e)
             {
