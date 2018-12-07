@@ -238,7 +238,7 @@ namespace GamePlay.Models
                     game = new Game(username, topic, noOfPlayers);
                     PendingGames.Add(game);
                     // var gamePlay = new GamePlay(game, startGame, notifyNoOpponentsFound);
-                    var timer = new System.Threading.Timer(OnTimerElapsed, game, 10000, -1);
+                    var timer = new System.Threading.Timer(OnTimerElapsed, game, 60000, -1);
                     timerCollection.Add(timer);
                     // timer.Dispose();
                 }
