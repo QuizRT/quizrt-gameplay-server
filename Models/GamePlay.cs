@@ -96,12 +96,14 @@ namespace GamePlay.Models
             JArray Questions = JArray.Parse(data);
             Console.WriteLine(Questions+"========");
             Console.WriteLine(Questions.Count+"+++++++++++++++++++");
+            return Questions;
             }
             catch(Exception e)
             {
                 Console.WriteLine(e.Message);
                 Console.WriteLine(e.StackTrace);
             }
+            
             return Questions;
             // Console.WriteLine(Questions);
         }
